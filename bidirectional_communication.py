@@ -14,11 +14,11 @@ class Bidirectional_communication:
     def host(self, ip, port, onconnect, onreceive):
         self.incoming_connection.bind((ip, port))
         self.incoming_connection.listen(5)
+        _thread.start_new(self.server, (socket, onconnect, onreceive))
+
+    def server(self, socket, onconnect, onreceive):
         socket, address = self.incoming_connection.accept()
         onconnect(address)
-        _thread.start_new(self.server, (socket, onreceive))
-
-    def server(self, socket, onreceive):
         while not self.disconnected:
             onreceive(socket.recv(1024).decode())
 
