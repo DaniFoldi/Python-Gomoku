@@ -53,8 +53,5 @@ class Bidirectional_discovery:
                     callback(discovery)
             time.sleep(1)
 
-    def stop_announcement(self):
-        self.stopped = True
-
     def stop_discovery(self):
         self.stopped = True
