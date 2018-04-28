@@ -189,12 +189,11 @@ class GameWindow():
 
     #HOST SIDE
     def start_loading(self):
-        self.connected = False
-        self.cancelled = False
         if self.local_game:
             start_local_game()
         else:
             self.display_gui(3)
+            self.connected = False
             self.communication.host(self.local_ip, int(self.port_value.get()) + 1, self.get_connection, self.get_message)
             self.discovery.start_announcement("GOMOKU-{}-{}-{}-{}-{}-{}".format(self.version, self.local_ip, self.width_value.get(), self.height_value.get(), self.local_name, self.port_value.get()))
 
@@ -211,15 +210,20 @@ class GameWindow():
         self.connection_frames = []
         self.discovery.start_discovery(self.new_server_found, self.server_timeout)
 
+    #SYMMETRICAL
+
     def get_connection(self, address):
         pass
 
     def get_message(self, message):
-        pass
-
-    def connect_to_peer(self, data):
-        actual_data = get_announced_data(data)
-        self.communication.connect(actual_data[1], int(actual_data[5]) + 2)
+        data = get_announced_data(message)
+        if not self.connected:
+            self.connected = True
+            self.communication.connect(data[0], data[1])
+            self.communication.send("GOMOKU-START")
+        else:
+            if data[0] == "START":
+                self.display_gui(5)
 
 if __name__ == "__main__":
     game = GameWindow()
