@@ -151,6 +151,7 @@ class GameWindow():
 
     def setup_game(self):
         self.local_game = False
+        self.started = False
         self.display_gui(1)
 
     def setup_local_game(self):
@@ -220,10 +221,13 @@ class GameWindow():
         if not self.connected:
             self.connected = True
             self.communication.connect(data[0], data[1])
+        if not self.started:
+            self.started = True
             self.communication.send("GOMOKU-START")
-        else:
             if data[0] == "START":
                 self.display_gui(5)
+            else:
+                pass
 
 if __name__ == "__main__":
     game = GameWindow()
