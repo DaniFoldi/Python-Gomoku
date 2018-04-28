@@ -30,6 +30,19 @@ class GridButton():
         self.onclick(self.x, self.y)
 
 class GameWindow():
+    def __init__(self):
+        self.version = "V1.1"
+        self.window = tk.Tk()
+        self.center_window()
+        self.set_game_state()
+        self.display_gui(0)
+        self.local_ip = socket.gethostbyname(socket.gethostname())
+        self.local_ip_numbers = [int(a) for a in self.local_ip.split(".")]
+        self.local_name = socket.gethostname().replace("-", " ")
+
+        self.discovery = Bidirectional_discovery()
+        self.communication = Bidirectional_communication()
+
     def center_window(self):
         self.window.update_idletasks()
         screen_width = self.window.winfo_screenwidth()
@@ -39,11 +52,6 @@ class GameWindow():
         x_position = int(screen_width / 2 - width / 2)
         y_position = int(screen_height / 2 - height / 2)
         self.window.geometry("{}x{}+{}+{}".format(width, height, x_position, y_position))
-
-    def connect_to_player(self, ip, port):
-        self.game_connection_sender = socket.socket()
-        self.game_connection_sender.settimeout(5)
-        self.game_connection_sender.connect((ip, port))
 
     def run_window(self):
         self.window.mainloop()
@@ -125,13 +133,7 @@ class GameWindow():
         if state == 5:
             self.game_frame = tk.Frame(self.menu_frame)
             self.game_frame.grid(row=0, column=0)
-
-    def discover_hosts(self):
-        self.display_gui(4)
-        self.connection_options = []
-        self.connection_frames = []
-        self.discovery.start_discovery(self.new_server_found, self.server_timeout)
-
+    
     def start_network_game(self):
         self.display_gui(5)
         self.game_grid = []
@@ -143,35 +145,6 @@ class GameWindow():
 
     def button_clicked(self, x, y):
         print(x, y)
-
-    def start_loading(self):
-        self.connected = False
-        self.cancelled = False
-        if self.local_game:
-            start_local_game()
-        else:
-            self.display_gui(3)
-            self.communication.host(self.local_ip, self.port_value.get() + 1, get_connection, self.get_message)
-            self.discovery.start_announcement("GOMOKU-{}-{}-{}-{}-{}-{}".format(self.version, self.local_ip, self.width_value.get(), self.height_value.get(), self.local_name, self.port_value.get()))
-            _thread.start_new(self.wait_for_connection(), ())
-        print(self.port_value.get())
-
-    def get_connection(address):
-
-
-    def get_message(message):
-        pass
-
-    def wait_for_connection(self):
-        self.connection_from_other.listen(5)
-        client, address = self.connection_from_other.accept()
-        data = client.recv(1024).decode()
-        actual_data = get_announced_data(data)
-        self.connected = True
-        self.communication.connect(actual_data[1], int(actual_data[5]) + 2)
-        if not hasattr(self, "connection_to_other"):
-            self.connection_to_other = socket.socket()
-        self.connection_to_other.connect((actual_data[1], int(actual_data[5]) + 2))
 
     def start_local_game(self):
         self.display_gui(5)
@@ -193,14 +166,9 @@ class GameWindow():
         size_label = tk.Label(frame, text="Width: {}, Height: {}".format(data[2], data[3]))
         size_label.grid(row=2, column=0, sticky="we")
         connect_button = ConnectButton(frame, self.connect_to, len(self.connection_options) - 1)
-        connect_button.connect_button.grid(column=1, rowspan=3, row=0, sticky="ns")
+        connect_button.connect_button.grid(row=0, column=1, rowspan=3, sticky="ns")
         frame.grid(row=len(self.connection_options))
         self.connection_frames.append(frame)
-
-    def connect_to(self, id):
-        self.connected = True
-        self.communication.connect(self.connection_options[id][1], int(self.connection_options[id][5]) + 1)
-        self.communication.host(self.local_ip, int(self.connection_options[id][5]) + 2, self.get_connection, self.get_message)
 
     def get_announced_data(self, data):
         if not data.startswith("GOMOKU"):
@@ -219,18 +187,39 @@ class GameWindow():
         self.connection_frames[id].destroy()
         del self.connection_frames[id]
 
-    def __init__(self):
-        self.version = "V1.1"
-        self.window = tk.Tk()
-        self.center_window()
-        self.set_game_state()
-        self.display_gui(0)
-        self.local_ip = socket.gethostbyname(socket.gethostname())
-        self.local_ip_numbers = [int(a) for a in self.local_ip.split(".")]
-        self.local_name = socket.gethostname().replace("-", " ")
+    #HOST SIDE
+    def start_loading(self):
+        self.connected = False
+        self.cancelled = False
+        if self.local_game:
+            start_local_game()
+        else:
+            self.display_gui(3)
+            self.communication.host(self.local_ip, int(self.port_value.get()) + 1, self.get_connection, self.get_message)
+            self.discovery.start_announcement("GOMOKU-{}-{}-{}-{}-{}-{}".format(self.version, self.local_ip, self.width_value.get(), self.height_value.get(), self.local_name, self.port_value.get()))
 
-        self.discovery = Bidirectional_discovery()
-        self.communication = Bidirectional_communication()
+    #CLIENT SIDE
+    def connect_to(self, id):
+        self.connected = True
+        self.communication.connect(self.connection_options[id][1], int(self.connection_options[id][5]) + 1)
+        self.communication.send("GOMOKU-{}-{}".format(self.local_ip, int(self.connection_options[id][5]) + 2))
+        self.communication.host(self.local_ip, int(self.connection_options[id][5]) + 2, self.get_connection, self.get_message)
+
+    def discover_hosts(self):
+        self.display_gui(4)
+        self.connection_options = []
+        self.connection_frames = []
+        self.discovery.start_discovery(self.new_server_found, self.server_timeout)
+
+    def get_connection(self, address):
+        pass
+
+    def get_message(self, message):
+        pass
+
+    def connect_to_peer(self, data):
+        actual_data = get_announced_data(data)
+        self.communication.connect(actual_data[1], int(actual_data[5]) + 2)
 
 if __name__ == "__main__":
     game = GameWindow()
