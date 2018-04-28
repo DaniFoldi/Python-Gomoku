@@ -25,12 +25,12 @@ class Bidirectional_discovery:
         self.stopped = False
         _thread.start_new(self.announce, (data, delay, port))
 
-    def start_discovery(self, callback, delay=DEFAULT_DELAY, port=DEFAULT_PORT):
+    def start_discovery(self, add_callback, remove_callback, delay=DEFAULT_DELAY, port=DEFAULT_PORT):
         self.stopped = False
         self.discovery_service.bind(('', port))
         self.discovered = []
-        _thread.start_new(self.discover, (callback, port))
-        _thread.start_new(self.handle_discoveries, (delay))
+        _thread.start_new(self.discover, (add_callback, port))
+        _thread.start_new(self.handle_discoveries, (remove_callback, delay))
 
     def announce(self, data, delay=DEFAULT_DELAY, port=DEFAULT_PORT):
         while not self.stopped:
@@ -45,12 +45,13 @@ class Bidirectional_discovery:
                 self.discovered.append(Discovery(data, address, int(time.strftime("%S", time.gmtime()))))
                 callback(data)
 
-    def handle_discoveries(self, delay=DEFAULT_DELAY):
+    def handle_discoveries(self, callback, delay=DEFAULT_DELAY):
         while not self.stopped:
             for discovery in range(len(self.discovered)):
-                if self.discovered[discovery].time > int(time.strftime("%S", time.gmtime())) + delay:
+                if self.discovered[discovery].time > int(time.strftime("%S", time.gmtime())) + 2 * delay:
                     del self.discovered[discovery]
-            time.sleep(delay)
+                    callback(discovery)
+            time.sleep(1)
 
     def stop_announcement(self):
         self.stopped = True
