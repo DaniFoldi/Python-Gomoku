@@ -201,6 +201,7 @@ class GameWindow():
     #CLIENT SIDE
     def connect_to(self, id):
         self.connected = True
+        self.started = False
         self.communication.connect(self.connection_options[id][1], int(self.connection_options[id][5]) + 1)
         self.communication.send("GOMOKU-{}-{}".format(self.local_ip, int(self.connection_options[id][5]) + 2))
         self.communication.host(self.local_ip, int(self.connection_options[id][5]) + 2, self.get_connection, self.get_message)
@@ -212,15 +213,14 @@ class GameWindow():
         self.discovery.start_discovery(self.new_server_found, self.server_timeout)
 
     #SYMMETRICAL
-
     def get_connection(self, address):
-        pass
+        print("CON", address)
 
     def get_message(self, message):
-        data = get_announced_data(message)
+        data = self.get_announced_data(message)
         if not self.connected:
             self.connected = True
-            self.communication.connect(data[0], data[1])
+            self.communication.connect(data[0], int(data[1]))
         if not self.started:
             self.started = True
             self.communication.send("GOMOKU-START")
