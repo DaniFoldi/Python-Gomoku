@@ -146,10 +146,6 @@ class GameWindow():
                 self.game_grid[i].append(GridCell(self.game_frame, cell_size, i, j, self.button_clicked))
                 self.game_grid[i][j].frame.grid(row=i, column=j)
 
-    def button_clicked(self, x, y):
-        self.communication.send("GOMOKU-STEP-{}-{}".format(x, y))
-        self.game_grid[x][y].cell["text"] = "X"
-
     def start_local_game(self):
         self.display_gui(5)
 
@@ -191,8 +187,9 @@ class GameWindow():
         del self.connection_options[id]
         self.connection_frames[id].destroy()
         del self.connection_frames[id]
+        if len(self.connection_options) == 0:
+            self.display_gui(4)
 
-    #HOST SIDE
     def start_loading(self):
         if self.local_game:
             start_local_game()
@@ -204,7 +201,6 @@ class GameWindow():
             self.communication.host(self.local_ip, int(self.port_value.get()) + 1, self.get_connection, self.get_message)
             self.discovery.start_announcement("GOMOKU-{}-{}-{}-{}-{}-{}".format(self.version, self.local_ip, self.width_value.get(), self.height_value.get(), self.local_name, self.port_value.get()))
 
-    #CLIENT SIDE
     def connect_to(self, id):
         self.connected = True
         self.started = False
@@ -223,7 +219,6 @@ class GameWindow():
         self.connection_frames = []
         self.discovery.start_discovery(self.new_server_found, self.server_timeout)
 
-    #SYMMETRICAL
     def get_connection(self, address):
         pass
 
