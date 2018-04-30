@@ -78,7 +78,7 @@ class GameWindow():
 
         if state == 0:
             local_multiplayer_button = tk.Button(self.menu_frame, text="Local Multiplayer", font=button_font, command=self.setup_local_game)
-            local_multiplayer_button.grid(row=0, columnspan=2, sticky="NSEW")
+            local_multiplayer_button.grid(row=0, columnspan=2, sticky="nsew")
             connect_button = tk.Button(self.menu_frame, text="Connect", font=button_font, command=self.discover_hosts)
             connect_button.grid(row=1, column=0, sticky=tk.NSEW)
             create_button = tk.Button(self.menu_frame, text="Create Game", font=button_font, command=self.setup_game)
@@ -191,15 +191,12 @@ class GameWindow():
             self.display_gui(4)
 
     def start_loading(self):
-        if self.local_game:
-            start_local_game()
-        else:
-            self.display_gui(3)
-            self.connected = False
-            self.grid_width = self.width_value.get()
-            self.grid_height = self.height_value.get()
-            self.communication.host(self.local_ip, int(self.port_value.get()) + 1, self.get_connection, self.get_message)
-            self.discovery.start_announcement("GOMOKU-{}-{}-{}-{}-{}-{}".format(self.version, self.local_ip, self.width_value.get(), self.height_value.get(), self.local_name, self.port_value.get()))
+        self.display_gui(3)
+        self.connected = False
+        self.grid_width = self.width_value.get()
+        self.grid_height = self.height_value.get()
+        self.communication.host(self.local_ip, int(self.port_value.get()) + 1, self.get_connection, self.get_message)
+        self.discovery.start_announcement("GOMOKU-{}-{}-{}-{}-{}-{}".format(self.version, self.local_ip, self.width_value.get(), self.height_value.get(), self.local_name, self.port_value.get()))
 
     def connect_to(self, id):
         self.connected = True
