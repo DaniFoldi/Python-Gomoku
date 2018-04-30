@@ -79,7 +79,7 @@ class GameWindow():
         if hasattr(self, "menu_frame"):
             self.menu_frame.destroy()
         self.menu_frame = tk.Frame(self.window)
-        self.menu_frame.place(relx=.5, rely=.5, anchor="c")
+        self.menu_frame.place(relx=.5, rely=.5, anchor=tk.CENTER)
 
     def display_gui(self, state):
         self.clear_frame()
@@ -90,7 +90,7 @@ class GameWindow():
 
         if state == 0:
             local_multiplayer_button = tk.Button(self.menu_frame, text="Local Multiplayer", font=button_font, command=self.setup_local_game)
-            local_multiplayer_button.grid(row=0, columnspan=2, sticky="nsew")
+            local_multiplayer_button.grid(row=0, columnspan=2, sticky=tk.NSEW)
             connect_button = tk.Button(self.menu_frame, text="Connect", font=button_font, command=self.discover_hosts)
             connect_button.grid(row=1, column=0, sticky=tk.NSEW)
             create_button = tk.Button(self.menu_frame, text="Create Game", font=button_font, command=self.setup_game)
@@ -98,20 +98,20 @@ class GameWindow():
 
         if state == 1:
             width_label = tk.Label(self.menu_frame, text="Grid width:", font=label_font)
-            width_label.grid(row=0, column=0, sticky="w")
+            width_label.grid(row=0, column=0, sticky=tk.W)
             self.width_value = tk.IntVar(self.menu_frame, value=20)
             width_entry = tk.Entry(self.menu_frame, textvariable=self.width_value)
             width_entry.grid(row=0, column=1)
             height_label = tk.Label(self.menu_frame, text="Grid height:", font=label_font)
-            height_label.grid(row=1, column=0, sticky="w")
+            height_label.grid(row=1, column=0, sticky=tk.W)
             self.height_value = tk.IntVar(self.menu_frame, value=20)
             height_entry = tk.Entry(self.menu_frame, textvariable=self.height_value)
             height_entry.grid(row=1, column=1)
             if not self.local_game:
                 separator = ttk.Separator(self.menu_frame)
-                separator.grid(row=2, columnspan=2, sticky="we")
+                separator.grid(row=2, columnspan=2, sticky=tk.EW)
                 port_label = tk.Label(self.menu_frame, text="Port:", font=label_font)
-                port_label.grid(row=3, column=0, sticky="w")
+                port_label.grid(row=3, column=0, sticky=tk.W)
                 self.port_value = tk.IntVar(self.menu_frame, value=DEFAULT_PORT)
                 port_entry = tk.Entry(self.menu_frame, textvariable=self.port_value)
                 port_entry.grid(row=3, column=1)
@@ -123,13 +123,13 @@ class GameWindow():
                 #message_label = tk.Label(self.menu_frame, text="Leave empty for no password")
                 #message_label.grid(row=5, columnspan=2)
             separator2 = ttk.Separator(self.menu_frame)
-            separator2.grid(row=6, columnspan=2, sticky="we")
+            separator2.grid(row=6, columnspan=2, sticky=tk.EW)
             go_button = tk.Button(self.menu_frame, text="Confirm", command=self.start_loading)
             go_button.grid(row=7, columnspan=2)
 
         if state == 2:
             port_label = tk.Label(self.menu_frame, text="Port:", font=label_font)
-            port_label.grid(row=0, column=0, sticky="w")
+            port_label.grid(row=0, column=0, sticky=tk.W)
             self.port_value = tk.IntVar(self.menu_frame, value=DEFAULT_PORT)
             port_entry = tk.Entry(self.menu_frame, textvariable=self.port_value)
             port_entry.grid(row=0, column=1)
@@ -178,13 +178,13 @@ class GameWindow():
     def display_connection_details(self, data):
         frame = tk.Frame(self.menu_frame)
         name_label = tk.Label(frame, text=data[4], font="Arial 14 bold")
-        name_label.grid(row=0, column=0, sticky="we")
+        name_label.grid(row=0, column=0, sticky=tk.EW)
         ip_label = tk.Label(frame, text="IP: {}:{}".format(data[1], data[5]))
-        ip_label.grid(row=1, column=0, sticky="we")
+        ip_label.grid(row=1, column=0, sticky=tk.EW)
         size_label = tk.Label(frame, text="Width: {}, Height: {}".format(data[2], data[3]))
-        size_label.grid(row=2, column=0, sticky="we")
+        size_label.grid(row=2, column=0, sticky=tk.EW)
         connect_button = ConnectButton(frame, self.connect_to, len(self.connection_options) - 1)
-        connect_button.connect_button.grid(row=0, column=1, rowspan=3, sticky="ns")
+        connect_button.connect_button.grid(row=0, column=1, rowspan=3, sticky=tk.NS)
         frame.grid(row=len(self.connection_options))
         self.connection_frames.append(frame)
 
