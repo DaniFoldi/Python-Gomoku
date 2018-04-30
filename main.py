@@ -44,7 +44,7 @@ class GridCell():
 
 class GameWindow():
     def __init__(self):
-        self.version = "V1.1"
+        self.version = "V1.2"
         self.window = tk.Tk()
         self.center_window()
         self.display_gui(0)
@@ -146,7 +146,7 @@ class GameWindow():
             self.game_frame = tk.Frame(self.menu_frame)
             self.game_frame.grid(row=0, column=0)
     
-    def start_network_game(self):
+    def start_game(self):
         self.display_gui(5)
         self.game_grid = []
         self.window.update_idletasks()
@@ -160,7 +160,9 @@ class GameWindow():
                 self.game_grid[i][j].frame.grid(row=i, column=j)
 
     def start_local_game(self):
+        self.next_player = "X"
         self.display_gui(5)
+        self.start_game()
 
     def setup_game(self):
         self.local_game = False
@@ -204,12 +206,15 @@ class GameWindow():
             self.display_gui(4)
 
     def start_loading(self):
-        self.display_gui(3)
-        self.connected = False
         self.grid_width = self.width_value.get()
         self.grid_height = self.height_value.get()
-        self.communication.host(self.local_ip, int(self.port_value.get()) + 1, self.get_connection, self.get_message)
-        self.discovery.start_announcement("GOMOKU-{}-{}-{}-{}-{}-{}".format(self.version, self.local_ip, self.width_value.get(), self.height_value.get(), self.local_name, self.port_value.get()))
+        if self.local_game:
+            self.start_local_game()
+        else:
+            self.display_gui(3)
+            self.connected = False
+            self.communication.host(self.local_ip, int(self.port_value.get()) + 1, self.get_connection, self.get_message)
+            self.discovery.start_announcement("GOMOKU-{}-{}-{}-{}-{}-{}".format(self.version, self.local_ip, self.width_value.get(), self.height_value.get(), self.local_name, self.port_value.get()))
 
     def connect_to(self, id):
         self.connected = True
@@ -247,6 +252,23 @@ class GameWindow():
             for y in range(self.grid_width - 4):
                 if re.search("O{5}", "".join([self.game_grid[x - i][y + i].cell["text"] for i in range(5)])):
                     return "ODR"
+        return None
+
+    def check_x_win(self):
+        for row in self.game_grid:
+            if re.search("X{5}", "".join([cell.cell["text"] for cell in row])) is not None:
+                return "XH"
+        for column in range(self.grid_width):
+            if re.search("X{5}", "".join([row[column].cell["text"] for row in self.game_grid])) is not None:
+                return "XV"
+        for x in range(self.grid_height - 4):
+            for y in range(self.grid_width - 4):
+                if re.search("X{5}", "".join([self.game_grid[x + i][y + i].cell["text"] for i in range(5)])):
+                    return "XDL"
+        for x in range(4, self.grid_height):
+            for y in range(self.grid_width - 4):
+                if re.search("X{5}", "".join([self.game_grid[x - i][y + i].cell["text"] for i in range(5)])):
+                    return "XDR"
         return None
 
     def get_message(self, message):
@@ -305,11 +327,27 @@ class GameWindow():
             self.display_gui(0)
 
     def button_clicked(self, x, y):
-        if (self.my_turn or self.local_game) and self.game_grid[x][y].cell["text"] == " ":
-            self.communication.send("GOMOKU-STEP-{}-{}".format(x, y))
-            self.game_grid[x][y].set("X")
-            self.my_turn = False
-
+        if self.game_grid[x][y].cell["text"] == " ":
+            if self.local_game:
+                self.game_grid[x][y].set(self.next_player)
+                if self.next_player == "X":
+                    self.next_player = "O"
+                else:
+                    self.next_player = "X"
+                if self.check_win():
+                    new_game = messagebox.askyesno("Would you like to play again?", "O won")
+                    self.new_game(new_game)
+                elif self.check_x_win():
+                    new_game = messagebox.askyesno("Would you like to play again?", "X won")
+                    self.new_game(new_game)
+                else:
+                    self.set_game_state("{}'s turn".format(self.next_player))
+            elif self.my_turn:
+                self.communication.send("GOMOKU-STEP-{}-{}".format(x, y))
+                self.game_grid[x][y].set("X")
+                self.my_turn = False
+                self.set_game_state("Opponent's turn")
+                
 if __name__ == "__main__":
     game = GameWindow()
     game.run_window()
