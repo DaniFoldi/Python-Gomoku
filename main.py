@@ -336,14 +336,13 @@ class GameWindow():
                     self.next_player = "O"
                 else:
                     self.next_player = "X"
+                self.set_game_state("{}'s turn".format(self.next_player))
                 if self.check_win():
                     new_game = messagebox.askyesno("Would you like to play again?", "O won")
                     self.new_game(new_game)
                 elif self.check_x_win():
                     new_game = messagebox.askyesno("Would you like to play again?", "X won")
                     self.new_game(new_game)
-                else:
-                    self.set_game_state("{}'s turn".format(self.next_player))
             elif self.my_turn:
                 self.communication.send("GOMOKU-STEP-{}-{}".format(x, y))
                 self.game_grid[x][y].set("X")
