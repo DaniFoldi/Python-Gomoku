@@ -214,9 +214,11 @@ class GameWindow():
         self.communication.connect(self.connection_options[id][1], int(self.connection_options[id][5]) + 1)
         self.communication.send("GOMOKU-{}-{}".format(self.local_ip, int(self.connection_options[id][5]) + 2))
         self.communication.host(self.local_ip, int(self.connection_options[id][5]) + 2, self.get_connection, self.get_message)
+        self.my_turn = False
 
     def discover_hosts(self):
         self.display_gui(4)
+        self.local_game = False
         self.connection_options = []
         self.connection_frames = []
         self.discovery.start_discovery(self.new_server_found, self.server_timeout)
@@ -224,6 +226,9 @@ class GameWindow():
     #SYMMETRICAL
     def get_connection(self, address):
         pass
+
+    def check_win(self):
+        return None
 
     def get_message(self, message):
         data = self.get_announced_data(message)
@@ -233,13 +238,55 @@ class GameWindow():
             self.connected = True
             self.discovery.stop_discovery()
             self.communication.connect(data[0], int(data[1]))
+            self.my_turn = True
         if not self.started:
             self.started = True
             self.communication.send("GOMOKU-START")
+
         if data[0] == "START":
             self.start_network_game()
+
         elif data[0] == "STEP":
-            self.game_grid[int(data[1])][int(data[2])].cell["text"] = "O"
+            self.game_grid[int(data[1])][int(data[2])].set("O")
+            self.my_turn = True
+            if self.check_win() is not None:
+                self.communication.send("GOMOKU-WIN")
+                self.new_game_agreement = Agreement(self.new_game)
+                new_game = messagebox.askyesno("Would you like to play again?", "Your opponent won")
+                self.new_game_agreement.local_answer(new_game)
+                if new_game:
+                    self.communication.send("GOMOKU-RESTART-OK")
+                else:
+                    self.communication.send("GOMOKU-RESTART-NO")
+
+        elif data[0] == "WIN":
+            new_game = messagebox.askyesno("Would you like to play again?", "You won")
+            self.new_game_agreement = Agreement(self.new_game)
+            self.new_game_agreement.local_answer(new_game)
+            if new_game:
+                self.communication.send("GOMOKU-RESTART-OK")
+            else:
+                self.communication.send("GOMOKU-RESTART-NO")
+
+        elif data[0] == "RESTART":
+            if data[1] == "OK":
+                self.new_game_agreement.remote_answer(True)
+            else:
+                self.new_game_agreement.remote_answer(False)
+
+    def new_game(self, agreed):
+        if agreed:
+            for row in self.game_grid:
+                for cell in row:
+                    cell.set(" ")
+        else:
+            self.display_gui(0)
+
+    def button_clicked(self, x, y):
+        if (self.my_turn or self.local_game) and self.game_grid[x][y].cell["text"] == " ":
+            self.communication.send("GOMOKU-STEP-{}-{}".format(x, y))
+            self.game_grid[x][y].set("X")
+            self.my_turn = False
 
 if __name__ == "__main__":
     game = GameWindow()
