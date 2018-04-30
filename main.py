@@ -7,7 +7,7 @@ import re
 
 from bidirectional_discovery import Bidirectional_discovery
 from bidirectional_communication import Bidirectional_communication
-from rsa_encryption import RSA_encryption
+#from rsa_encryption import RSA_encryption
 from agreement import Agreement
 
 class ConnectButton():
