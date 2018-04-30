@@ -1,9 +1,7 @@
-import time
 import socket
 import tkinter as tk
 import tkinter.font as font
 import tkinter.ttk as ttk
-import _thread
 import re
 
 from bidirectional_discovery import Bidirectional_discovery
