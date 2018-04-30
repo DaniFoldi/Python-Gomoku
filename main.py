@@ -19,14 +19,18 @@ class ConnectButton():
     def clicked(self):
         self.onclick(self.value)
 
-class GridButton():
-    def __init__(self, frame, x, y, onclick):
-        self.button = tk.Button(frame, text=" ", command=self.clicked, height=2, width=2)
+class GridCell():
+    def __init__(self, frame, size, x, y, onclick):
+        self.frame = tk.Frame(frame, width=size, height=size, borderwidth=0)
+        self.frame.pack_propagate(0)
+        self.cell = tk.Label(self.frame, text=" ", borderwidth=2, relief="groove")
+        self.cell.place(x=0, y=0)
+        self.cell.bind("<Button-1>", self.clicked)
         self.onclick = onclick
         self.x = x
         self.y = y
 
-    def clicked(self):
+    def clicked(self, event):
         self.onclick(self.x, self.y)
 
 class GameWindow():
@@ -137,14 +141,16 @@ class GameWindow():
     def start_network_game(self):
         self.display_gui(5)
         self.game_grid = []
+        cell_size = 15
         for i in range(self.grid_height):
             self.game_grid.append([])
             for j in range(self.grid_width):
-                self.game_grid[i].append(GridButton(self.game_frame, i, j, self.button_clicked))
-                self.game_grid[i][j].grid(row=i, column=j)
+                self.game_grid[i].append(GridCell(self.game_frame, cell_size, i, j, self.button_clicked))
+                self.game_grid[i][j].frame.grid(row=i, column=j)
 
     def button_clicked(self, x, y):
-        print(x, y)
+        self.communication.send("GOMOKU-STEP-{}-{}".format(x, y))
+        self.game_grid[x][y].cell["text"] = "X"
 
     def start_local_game(self):
         self.display_gui(5)
@@ -195,6 +201,8 @@ class GameWindow():
         else:
             self.display_gui(3)
             self.connected = False
+            self.grid_width = self.width_value.get()
+            self.grid_height = self.height_value.get()
             self.communication.host(self.local_ip, int(self.port_value.get()) + 1, self.get_connection, self.get_message)
             self.discovery.start_announcement("GOMOKU-{}-{}-{}-{}-{}-{}".format(self.version, self.local_ip, self.width_value.get(), self.height_value.get(), self.local_name, self.port_value.get()))
 
@@ -202,6 +210,9 @@ class GameWindow():
     def connect_to(self, id):
         self.connected = True
         self.started = False
+        self.discovery.stop_discovery()
+        self.grid_width = int(self.connection_options[id][2])
+        self.grid_height = int(self.connection_options[id][3])
         self.communication.connect(self.connection_options[id][1], int(self.connection_options[id][5]) + 1)
         self.communication.send("GOMOKU-{}-{}".format(self.local_ip, int(self.connection_options[id][5]) + 2))
         self.communication.host(self.local_ip, int(self.connection_options[id][5]) + 2, self.get_connection, self.get_message)
@@ -214,20 +225,23 @@ class GameWindow():
 
     #SYMMETRICAL
     def get_connection(self, address):
-        print("CON", address)
+        pass
 
     def get_message(self, message):
         data = self.get_announced_data(message)
+        if data is None:
+            return
         if not self.connected:
             self.connected = True
+            self.discovery.stop_discovery()
             self.communication.connect(data[0], int(data[1]))
         if not self.started:
             self.started = True
             self.communication.send("GOMOKU-START")
-            if data[0] == "START":
-                self.display_gui(5)
-            else:
-                pass
+        if data[0] == "START":
+            self.start_network_game()
+        elif data[0] == "STEP":
+            self.game_grid[int(data[1])][int(data[2])].cell["text"] = "O"
 
 if __name__ == "__main__":
     game = GameWindow()
