@@ -223,6 +223,20 @@ class GameWindow():
         pass
 
     def check_win(self):
+        for row in self.game_grid:
+            if re.search("O{5}", "".join([cell.cell["text"] for cell in row])) is not None:
+                return "OH"
+        for column in range(self.grid_width):
+            if re.search("O{5}", "".join([row[column].cell["text"] for row in self.game_grid])) is not None:
+                return "OV"
+        for x in range(self.grid_width - 5):
+            for y in range(self.grid_height - 5):
+                if re.search("O{5}", "".join([self.game_grid[x + i][y + i].cell["text"] for i in range(5)])):
+                    return "ODL"
+        for x in range(4, self.grid_width):
+            for y in range(self.grid_height - 5):
+                if re.search("O{5}", "".join([self.game_grid[x - i][y + i].cell["text"] for i in range(5)])):
+                    return "ODR"
         return None
 
     def get_message(self, message):
