@@ -10,6 +10,8 @@ from bidirectional_communication import Bidirectional_communication
 #from rsa_encryption import RSA_encryption
 from agreement import Agreement
 
+DEFAULT_PORT = 65001
+
 class ConnectButton():
     def __init__(self, frame, onclick, id):
         self.connect_button = tk.Button(frame, text="Connect", command=self.clicked)
@@ -110,7 +112,7 @@ class GameWindow():
                 separator.grid(row=2, columnspan=2, sticky="we")
                 port_label = tk.Label(self.menu_frame, text="Port:", font=label_font)
                 port_label.grid(row=3, column=0, sticky="w")
-                self.port_value = tk.IntVar(self.menu_frame, value=65530)
+                self.port_value = tk.IntVar(self.menu_frame, value=DEFAULT_PORT)
                 port_entry = tk.Entry(self.menu_frame, textvariable=self.port_value)
                 port_entry.grid(row=3, column=1)
                 #password_label = tk.Label(self.menu_frame, text="Password:", font=label_font)
@@ -128,7 +130,7 @@ class GameWindow():
         if state == 2:
             port_label = tk.Label(self.menu_frame, text="Port:", font=label_font)
             port_label.grid(row=0, column=0, sticky="w")
-            self.port_value = tk.IntVar(self.menu_frame, value=65530)
+            self.port_value = tk.IntVar(self.menu_frame, value=DEFAULT_PORT)
             port_entry = tk.Entry(self.menu_frame, textvariable=self.port_value)
             port_entry.grid(row=0, column=1)
             go_button = tk.Button(self.menu_frame, text="Confirm", command=self.discover_hosts)
