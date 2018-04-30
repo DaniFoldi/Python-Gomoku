@@ -150,7 +150,10 @@ class GameWindow():
     def start_network_game(self):
         self.display_gui(5)
         self.game_grid = []
-        cell_size = 15
+        self.window.update_idletasks()
+        screen_width = self.window.winfo_width()
+        screen_height = self.window.winfo_height()
+        cell_size = min(screen_width / self.grid_width, screen_height / self.grid_height)
         for i in range(self.grid_height):
             self.game_grid.append([])
             for j in range(self.grid_width):
