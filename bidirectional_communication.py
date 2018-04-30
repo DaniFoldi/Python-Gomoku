@@ -10,17 +10,19 @@ class Bidirectional_communication:
     def connect(self, ip, port):
         self.outgoing_connection.settimeout(5)
         self.outgoing_connection.connect((ip, port))
+        self.disconnected = False
 
     def host(self, ip, port, onconnect, onreceive):
         self.incoming_connection.bind((ip, port))
-        self.incoming_connection.listen(5)
-        _thread.start_new(self.server, (socket, onconnect, onreceive))
+        self.disconnected = False
+        _thread.start_new(self.server, (onconnect, onreceive))
 
-    def server(self, socket, onconnect, onreceive):
-        socket, address = self.incoming_connection.accept()
+    def server(self, onconnect, onreceive):
+        self.incoming_connection.listen(5)
+        connected_socket, address = self.incoming_connection.accept()
         onconnect(address)
         while not self.disconnected:
-            onreceive(socket.recv(1024).decode())
+            onreceive(connected_socket.recv(1024).decode())
 
     def send(self, data):
         self.outgoing_connection.send(data.encode())
