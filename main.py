@@ -11,13 +11,13 @@ from bidirectional_communication import Bidirectional_communication
 from agreement import Agreement
 
 class ConnectButton():
-    def __init__(self, frame, onclick, value):
+    def __init__(self, frame, onclick, id):
         self.connect_button = tk.Button(frame, text="Connect", command=self.clicked)
         self.onclick = onclick
-        self.value = value
+        self.id = id
 
     def clicked(self):
-        self.onclick(self.value)
+        self.onclick(self.id)
 
 class GridCell():
     def __init__(self, frame, size, x, y, onclick):
@@ -47,10 +47,8 @@ class GameWindow():
         self.version = "V1.1"
         self.window = tk.Tk()
         self.center_window()
-        self.set_game_state()
         self.display_gui(0)
         self.local_ip = socket.gethostbyname(socket.gethostname())
-        self.local_ip_numbers = [int(a) for a in self.local_ip.split(".")]
         self.local_name = socket.gethostname().replace("-", " ")
 
         self.discovery = Bidirectional_discovery()
@@ -83,6 +81,7 @@ class GameWindow():
 
     def display_gui(self, state):
         self.clear_frame()
+        self.set_game_state()
 
         button_font = font.Font(size="20")
         label_font = font.Font(size="24")
@@ -240,12 +239,12 @@ class GameWindow():
         for column in range(self.grid_width):
             if re.search("O{5}", "".join([row[column].cell["text"] for row in self.game_grid])) is not None:
                 return "OV"
-        for x in range(self.grid_width - 5):
-            for y in range(self.grid_height - 5):
+        for x in range(self.grid_height - 4):
+            for y in range(self.grid_width - 4):
                 if re.search("O{5}", "".join([self.game_grid[x + i][y + i].cell["text"] for i in range(5)])):
                     return "ODL"
-        for x in range(4, self.grid_width):
-            for y in range(self.grid_height - 5):
+        for x in range(4, self.grid_height):
+            for y in range(self.grid_width - 4):
                 if re.search("O{5}", "".join([self.game_grid[x - i][y + i].cell["text"] for i in range(5)])):
                     return "ODR"
         return None
@@ -264,11 +263,12 @@ class GameWindow():
             self.communication.send("GOMOKU-START")
 
         if data[0] == "START":
-            self.start_network_game()
+            self.start_game()
 
         elif data[0] == "STEP":
             self.game_grid[int(data[1])][int(data[2])].set("O")
             self.my_turn = True
+            self.set_game_state("Your turn")
             if self.check_win() is not None:
                 self.communication.send("GOMOKU-WIN")
                 self.new_game_agreement = Agreement(self.new_game)
@@ -300,6 +300,8 @@ class GameWindow():
                 for cell in row:
                     cell.set(" ")
         else:
+            if not self.local_game:
+                self.communication.disconnect()
             self.display_gui(0)
 
     def button_clicked(self, x, y):
