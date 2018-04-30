@@ -24,7 +24,7 @@ class GridCell():
         self.frame = tk.Frame(frame, width=size, height=size, borderwidth=0)
         self.frame.pack_propagate(0)
         self.cell = tk.Label(self.frame, text=" ", borderwidth=2, relief="groove")
-        self.cell.place(x=0, y=0)
+        self.cell.pack(fill="both", expand=1)
         self.cell.bind("<Button-1>", self.clicked)
         self.onclick = onclick
         self.x = x
@@ -32,6 +32,15 @@ class GridCell():
 
     def clicked(self, event):
         self.onclick(self.x, self.y)
+
+    def set(self, label):
+        self.cell["text"]=label
+        if label == " ":
+            self.cell.config(bg="white")
+        elif label == "X":
+            self.cell.config(bg="#CFCFFF")
+        else:
+            self.cell.config(bg="#FFCFCF")
 
 class GameWindow():
     def __init__(self):
