@@ -29,7 +29,5 @@ class Bidirectional_communication:
 
     def disconnect(self):
         self.disconnected = True
-        self.incoming_connection.shutdown(socket.SHUT_RDWR)
-        self.outgoing_connection.shutdown(socket.SHUT_RDWR)
         self.incoming_connection.close()
         self.outgoing_connection.close()
