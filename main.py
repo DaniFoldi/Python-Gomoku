@@ -294,6 +294,10 @@ class GameWindow():
 
         if data[0] == "START":
             self.start_game()
+            if self.my_turn:
+                self.set_game_state(self.locale.get("yourTurn"))
+            else:
+                self.set_game_state(self.locale.get("opponent'sTurn"))
 
         elif data[0] == "STEP":
             self.game_grid[int(data[1])][int(data[2])].set("O")
