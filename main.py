@@ -15,8 +15,8 @@ from localization import Localization
 DEFAULT_PORT = 65001
 
 class ConnectButton():
-    def __init__(self, frame, onclick, id):
-        self.connect_button = tk.Button(frame, text="Connect", command=self.clicked)
+    def __init__(self, frame, onclick, id, text):
+        self.connect_button = tk.Button(frame, text=text, command=self.clicked)
         self.onclick = onclick
         self.id = id
 
@@ -77,9 +77,9 @@ class GameWindow():
 
     def set_game_state(self, state=""):
         if state == "":
-            self.window.title("Gomoku")
+            self.window.title(self.locale.get("gomoku"))
         else:
-            self.window.title("Gomoku - {}".format(state))
+            self.window.title("{} - {}".format(self.locale.get("gomoku"), state))
 
     def clear_frame(self):
         if hasattr(self, "menu_frame"):
@@ -95,20 +95,20 @@ class GameWindow():
         label_font = font.Font(size="24")
 
         if state == 0:
-            local_multiplayer_button = tk.Button(self.menu_frame, text="Local Multiplayer", font=button_font, command=self.setup_local_game)
+            local_multiplayer_button = tk.Button(self.menu_frame, text=self.locale.get("localMultiplayer"), font=button_font, command=self.setup_local_game)
             local_multiplayer_button.grid(row=0, columnspan=2, sticky=tk.NSEW)
-            connect_button = tk.Button(self.menu_frame, text="Connect", font=button_font, command=self.discover_hosts)
+            connect_button = tk.Button(self.menu_frame, text=self.locale.get("connect"), font=button_font, command=self.discover_hosts)
             connect_button.grid(row=1, column=0, sticky=tk.NSEW)
-            create_button = tk.Button(self.menu_frame, text="Create Game", font=button_font, command=self.setup_game)
+            create_button = tk.Button(self.menu_frame, text=self.locale.get("createGame"), font=button_font, command=self.setup_game)
             create_button.grid(row=1, column=1, sticky=tk.NSEW)
 
         if state == 1:
-            width_label = tk.Label(self.menu_frame, text="Grid width:", font=label_font)
+            width_label = tk.Label(self.menu_frame, text=self.locale.get("gridWidth:"), font=label_font)
             width_label.grid(row=0, column=0, sticky=tk.W)
             self.width_value = tk.IntVar(self.menu_frame, value=20)
             width_entry = tk.Entry(self.menu_frame, textvariable=self.width_value)
             width_entry.grid(row=0, column=1)
-            height_label = tk.Label(self.menu_frame, text="Grid height:", font=label_font)
+            height_label = tk.Label(self.menu_frame, text=self.locale.get("gridHeight:"), font=label_font)
             height_label.grid(row=1, column=0, sticky=tk.W)
             self.height_value = tk.IntVar(self.menu_frame, value=20)
             height_entry = tk.Entry(self.menu_frame, textvariable=self.height_value)
@@ -116,7 +116,7 @@ class GameWindow():
             if not self.local_game:
                 separator = ttk.Separator(self.menu_frame)
                 separator.grid(row=2, columnspan=2, sticky=tk.EW)
-                port_label = tk.Label(self.menu_frame, text="Port:", font=label_font)
+                port_label = tk.Label(self.menu_frame, text=self.locale.get("port:"), font=label_font)
                 port_label.grid(row=3, column=0, sticky=tk.W)
                 self.port_value = tk.IntVar(self.menu_frame, value=DEFAULT_PORT)
                 port_entry = tk.Entry(self.menu_frame, textvariable=self.port_value)
@@ -130,24 +130,24 @@ class GameWindow():
                 #message_label.grid(row=5, columnspan=2)
             separator2 = ttk.Separator(self.menu_frame)
             separator2.grid(row=6, columnspan=2, sticky=tk.EW)
-            go_button = tk.Button(self.menu_frame, text="Confirm", command=self.start_loading)
+            go_button = tk.Button(self.menu_frame, text=self.locale.get("confirm"), command=self.start_loading)
             go_button.grid(row=7, columnspan=2)
 
         if state == 2:
-            port_label = tk.Label(self.menu_frame, text="Port:", font=label_font)
+            port_label = tk.Label(self.menu_frame, text=self.locale.get("port:"), font=label_font)
             port_label.grid(row=0, column=0, sticky=tk.W)
             self.port_value = tk.IntVar(self.menu_frame, value=DEFAULT_PORT)
             port_entry = tk.Entry(self.menu_frame, textvariable=self.port_value)
             port_entry.grid(row=0, column=1)
-            go_button = tk.Button(self.menu_frame, text="Confirm", command=self.discover_hosts)
+            go_button = tk.Button(self.menu_frame, text=self.locale.get("confirm"), command=self.discover_hosts)
             go_button.grid(row=1, columnspan=2)
 
         if state == 3:
-            waiting_label = tk.Label(self.menu_frame, text="Waiting...", font=label_font)
+            waiting_label = tk.Label(self.menu_frame, text=self.locale.get("waiting..."), font=label_font)
             waiting_label.grid(row=0)
 
         if state == 4:
-            searching_label = tk.Label(self.menu_frame, text="Searching...", font=label_font)
+            searching_label = tk.Label(self.menu_frame, text=self.locale.get("searching..."), font=label_font)
             searching_label.grid(row=0)
 
         if state == 5:
@@ -185,11 +185,11 @@ class GameWindow():
         frame = tk.Frame(self.menu_frame)
         name_label = tk.Label(frame, text=data[4], font="Arial 14 bold")
         name_label.grid(row=0, column=0, sticky=tk.EW)
-        ip_label = tk.Label(frame, text="IP: {}:{}".format(data[1], data[5]))
+        ip_label = tk.Label(frame, text="{} {}:{}".format(self.locale.get("ip:"), data[1], data[5]))
         ip_label.grid(row=1, column=0, sticky=tk.EW)
-        size_label = tk.Label(frame, text="Width: {}, Height: {}".format(data[2], data[3]))
+        size_label = tk.Label(frame, text="{} {}, {} {}".format(self.locale.get("width:"), data[2], self.locale.get("height:"), data[3]))
         size_label.grid(row=2, column=0, sticky=tk.EW)
-        connect_button = ConnectButton(frame, self.connect_to, len(self.connection_options) - 1)
+        connect_button = ConnectButton(frame, self.connect_to, len(self.connection_options) - 1, self.locale.get("connect"))
         connect_button.connect_button.grid(row=0, column=1, rowspan=3, sticky=tk.NS)
         frame.grid(row=len(self.connection_options))
         self.connection_frames.append(frame)
@@ -298,11 +298,11 @@ class GameWindow():
         elif data[0] == "STEP":
             self.game_grid[int(data[1])][int(data[2])].set("O")
             self.my_turn = True
-            self.set_game_state("Your turn")
+            self.set_game_state(self.locale.get("yourTurn"))
             if self.check_win() is not None:
                 self.communication.send("GOMOKU-WIN")
                 self.new_game_agreement = Agreement(self.new_game)
-                new_game = messagebox.askyesno("Would you like to play again?", "Your opponent won")
+                new_game = messagebox.askyesno(self.locale.get("wouldYouLikeToPlayAgain?"), self.locale.get("yourOpponentWon"))
                 self.new_game_agreement.local_answer(new_game)
                 if new_game:
                     self.communication.send("GOMOKU-RESTART-OK")
@@ -310,7 +310,7 @@ class GameWindow():
                     self.communication.send("GOMOKU-RESTART-NO")
 
         elif data[0] == "WIN":
-            new_game = messagebox.askyesno("Would you like to play again?", "You won")
+            new_game = messagebox.askyesno(self.locale.get("wouldYouLikeToPlayAgain?"), self.locale.get("youWon"))
             self.new_game_agreement = Agreement(self.new_game)
             self.new_game_agreement.local_answer(new_game)
             if new_game:
@@ -342,18 +342,18 @@ class GameWindow():
                     self.next_player = "O"
                 else:
                     self.next_player = "X"
-                self.set_game_state("{}'s turn".format(self.next_player))
+                self.set_game_state("{}{}".format(self.next_player, self.locale.get("'sTurn")))
                 if self.check_win():
-                    new_game = messagebox.askyesno("Would you like to play again?", "O won")
+                    new_game = messagebox.askyesno(self.locale.get("wouldYouLikeToPlayAgain?"), "O {}".format(self.locale.get("won")))
                     self.new_game(new_game)
                 elif self.check_x_win():
-                    new_game = messagebox.askyesno("Would you like to play again?", "X won")
+                    new_game = messagebox.askyesno(self.locale.get("wouldYouLikeToPlayAgain?"), "X {}".format(self.locale.get("won")))
                     self.new_game(new_game)
             elif self.my_turn:
                 self.communication.send("GOMOKU-STEP-{}-{}".format(x, y))
                 self.game_grid[x][y].set("X")
                 self.my_turn = False
-                self.set_game_state("Opponent's turn")
+                self.set_game_state(self.locale.get("opponent'sTurn"))
                 
 if __name__ == "__main__":
     game = GameWindow()
