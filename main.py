@@ -1,3 +1,4 @@
+import sys
 import socket
 import tkinter as tk
 import tkinter.font as font
@@ -9,6 +10,7 @@ from bidirectional_discovery import Bidirectional_discovery
 from bidirectional_communication import Bidirectional_communication
 #from rsa_encryption import RSA_encryption
 from agreement import Agreement
+from localization import Localization
 
 DEFAULT_PORT = 65001
 
@@ -46,6 +48,10 @@ class GridCell():
 
 class GameWindow():
     def __init__(self):
+        if len(sys.argv) > 1:
+            self.locale = Localization(sys.argv[1])
+        else:
+            self.locale = Localization("en_US")
         self.version = "V1.2"
         self.window = tk.Tk()
         self.center_window()
